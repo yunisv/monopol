@@ -63,15 +63,16 @@ export default function Board({ gameState, rolling }: Props) {
 
   return (
     <div
-      className="w-full aspect-square rounded-xl overflow-hidden shadow-2xl"
+      className="w-full aspect-square rounded-xl overflow-hidden"
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(11, 1fr)',
-        gridTemplateRows: 'repeat(11, 1fr)',
+        /* Corners are 2× the size of regular edge cells — matches richup.io */
+        gridTemplateColumns: '2fr repeat(9, 1fr) 2fr',
+        gridTemplateRows:    '2fr repeat(9, 1fr) 2fr',
         backgroundColor: '#000',
         gap: '1px',
-        border: '2px solid rgba(255,255,255,0.08)',
-        boxShadow: '0 0 40px rgba(0,0,0,0.8)',
+        border: '2px solid rgba(255,255,255,0.06)',
+        boxShadow: '0 0 60px rgba(0,0,0,0.9)',
       }}
     >
       {slots.map(({ row, col, cell }) => {
@@ -82,15 +83,15 @@ export default function Board({ gameState, rolling }: Props) {
             return (
               <div
                 key={`${row}-${col}`}
-                style={{ gridRow: '2 / 11', gridColumn: '2 / 11', backgroundColor: '#0a0818' }}
-                className="flex flex-col items-center justify-center gap-2 p-3"
+                style={{ gridRow: '2 / 11', gridColumn: '2 / 11', backgroundColor: '#0c0a1e' }}
+                className="flex flex-col items-center justify-center gap-3 p-4"
               >
-                <div className="text-2xl font-black tracking-widest select-none" style={{ color: 'rgba(255,255,255,0.06)' }}>
+                <div className="text-3xl font-black tracking-widest select-none" style={{ color: 'rgba(255,255,255,0.05)' }}>
                   MONOPOL
                 </div>
 
                 {gameState.status === 'playing' && (
-                  <div className="flex items-center gap-2 text-[10px] text-white/30 flex-wrap justify-center">
+                  <div className="flex items-center gap-3 text-[11px] text-white/30 flex-wrap justify-center">
                     <span>Round {roundNumber}</span>
                     {settings.jackpotEnabled && jackpotPool > 0 && (
                       <span className="text-indigo-400 font-semibold">💎 ${jackpotPool}</span>
@@ -107,9 +108,8 @@ export default function Board({ gameState, rolling }: Props) {
                   </div>
                 )}
 
-                {/* Dice — animated while rolling */}
                 {(rolling || gameState.lastDice) && (
-                  <div className={`flex gap-3 ${rolling ? 'opacity-70' : ''}`}>
+                  <div className={`flex gap-6 ${rolling ? 'opacity-60' : ''}`}>
                     {displayDice.map((d, i) => (
                       <DiceFace key={i} value={d} spinning={rolling} />
                     ))}
@@ -118,10 +118,10 @@ export default function Board({ gameState, rolling }: Props) {
 
                 {gameState.status === 'playing' && currentPlayer && (
                   <div className="text-center">
-                    <div className="text-[10px] text-white/30 uppercase tracking-wider">Turn</div>
+                    <div className="text-[10px] text-white/25 uppercase tracking-widest mb-1">Turn</div>
                     <div
-                      className="text-sm font-bold px-3 py-0.5 rounded-full"
-                      style={{ color: currentPlayer.color, backgroundColor: `${currentPlayer.color}22` }}
+                      className="text-sm font-bold px-4 py-1 rounded-full"
+                      style={{ color: currentPlayer.color, backgroundColor: `${currentPlayer.color}20`, border: `1px solid ${currentPlayer.color}40` }}
                     >
                       {currentPlayer.name}
                     </div>
@@ -129,7 +129,7 @@ export default function Board({ gameState, rolling }: Props) {
                 )}
 
                 {gameState.status === 'finished' && (
-                  <div className="text-yellow-400 text-lg font-black win-pulse">🏆 GAME OVER</div>
+                  <div className="text-yellow-400 text-xl font-black win-pulse">🏆 GAME OVER</div>
                 )}
               </div>
             );
@@ -137,7 +137,7 @@ export default function Board({ gameState, rolling }: Props) {
           return null;
         }
 
-        if (!cell) return <div key={`${row}-${col}`} className="bg-[#1a1231]" />;
+        if (!cell) return <div key={`${row}-${col}`} style={{ backgroundColor: '#0c0a1e' }} />;
 
         return (
           <div key={`${row}-${col}`} style={{ gridRow: row + 1, gridColumn: col + 1 }} className="h-full w-full">
@@ -160,38 +160,38 @@ export default function Board({ gameState, rolling }: Props) {
 function DiceFace({ value, spinning }: { value: number; spinning?: boolean }) {
   const dots: Record<number, [number, number][]> = {
     1: [[50, 50]],
-    2: [[27, 27], [73, 73]],
-    3: [[27, 27], [50, 50], [73, 73]],
-    4: [[27, 27], [73, 27], [27, 73], [73, 73]],
-    5: [[27, 27], [73, 27], [50, 50], [27, 73], [73, 73]],
-    6: [[27, 20], [73, 20], [27, 50], [73, 50], [27, 80], [73, 80]],
+    2: [[30, 30], [70, 70]],
+    3: [[30, 30], [50, 50], [70, 70]],
+    4: [[30, 30], [70, 30], [30, 70], [70, 70]],
+    5: [[30, 30], [70, 30], [50, 50], [30, 70], [70, 70]],
+    6: [[30, 22], [70, 22], [30, 50], [70, 50], [30, 78], [70, 78]],
   };
-  const S = 58;
-  const D = 7;
+  const S = 64; // face size
+  const D = 8;  // depth size
   return (
     <div className={spinning ? 'dice-rolling' : ''} style={{ position: 'relative', width: S + D, height: S + D }}>
-      {/* Right side */}
+      {/* Right face (depth) */}
       <div style={{
         position: 'absolute', top: D, right: 0, width: D, height: S,
-        background: 'linear-gradient(to right, #bbb, #999)',
-        borderRadius: '0 8px 8px 0',
+        background: 'linear-gradient(to right, #c8c8c8, #a0a0a0)',
+        borderRadius: '0 10px 10px 0',
       }} />
-      {/* Bottom side */}
+      {/* Bottom face (depth) */}
       <div style={{
         position: 'absolute', bottom: 0, left: D, width: S, height: D,
-        background: 'linear-gradient(to bottom, #aaa, #888)',
-        borderRadius: '0 0 8px 8px',
+        background: 'linear-gradient(to bottom, #b8b8b8, #909090)',
+        borderRadius: '0 0 10px 10px',
       }} />
       {/* Front face */}
       <div style={{
         position: 'absolute', top: 0, left: 0, width: S, height: S,
-        background: 'linear-gradient(135deg, #ffffff 0%, #f0eeee 100%)',
-        borderRadius: 12,
-        boxShadow: 'inset -3px -3px 6px rgba(0,0,0,0.12), 0 6px 20px rgba(0,0,0,0.5)',
+        background: 'linear-gradient(145deg, #ffffff 0%, #eeecec 100%)',
+        borderRadius: 14,
+        boxShadow: 'inset -2px -2px 5px rgba(0,0,0,0.10), 0 8px 24px rgba(0,0,0,0.55)',
       }}>
-        <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', padding: 6 }}>
+        <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', padding: 8 }}>
           {(dots[value] ?? []).map(([cx, cy], i) => (
-            <circle key={i} cx={cx} cy={cy} r={10} fill="#1a1231" />
+            <circle key={i} cx={cx} cy={cy} r={9} fill="#1a1231" />
           ))}
         </svg>
       </div>

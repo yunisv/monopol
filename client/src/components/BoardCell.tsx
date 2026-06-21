@@ -2,83 +2,64 @@
 
 import { BoardCell as BoardCellType, Player, PropertyColor } from '@/lib/types';
 
+/* ── Color strip colours – tuned to match richup.io ── */
 const COLOR_HEX: Record<PropertyColor, string> = {
-  brown:        '#c2692a',
-  'light-blue': '#38bdf8',
-  pink:         '#e879a0',
-  orange:       '#f97316',
-  red:          '#ef4444',
-  yellow:       '#eab308',
-  green:        '#22c55e',
-  'dark-blue':  '#4f83f0',
+  brown:        '#c4783a',
+  'light-blue': '#4ec8e0',
+  pink:         '#e060a4',
+  orange:       '#e07828',
+  red:          '#e83030',
+  yellow:       '#d4b020',
+  green:        '#28b838',
+  'dark-blue':  '#3858d8',
 };
 
+/* Very subtle per-group dark background tint */
 const GROUP_BG: Record<PropertyColor, string> = {
-  brown:        '#1c1008',
-  'light-blue': '#060f1c',
-  pink:         '#1a0815',
-  orange:       '#1a0d04',
-  red:          '#180505',
-  yellow:       '#181200',
+  brown:        '#171008',
+  'light-blue': '#070f18',
+  pink:         '#180810',
+  orange:       '#180e04',
+  red:          '#180606',
+  yellow:       '#181400',
   green:        '#061408',
-  'dark-blue':  '#040a1e',
+  'dark-blue':  '#040818',
 };
 
 const SPECIAL_BG: Record<string, string> = {
-  start:           '#0c2318',
-  jail:            '#12131e',
-  free_parking:    '#071a1a',
-  go_to_jail:      '#1a0606',
-  chance:          '#160a24',
-  community_chest: '#1e1004',
-  tax:             '#0e1018',
-  railroad:        '#0a0f1a',
-  utility:         '#080f1c',
-  casino:          '#1a0614',
-  jackpot:         '#090620',
-  duel:            '#1a0508',
+  start:           '#0a1e10',
+  jail:            '#0e1018',
+  free_parking:    '#061618',
+  go_to_jail:      '#180606',
+  chance:          '#120820',
+  community_chest: '#1c1006',
+  tax:             '#0c1018',
+  railroad:        '#0c1018',
+  utility:         '#080e18',
+  casino:          '#140820',
+  jackpot:         '#08061e',
+  duel:            '#180608',
 };
 
+/* Accent colour for special cells */
 const ACCENT: Record<string, string> = {
   start:           '#4ade80',
-  jail:            '#8899bb',
+  jail:            '#7a8caa',
   free_parking:    '#2dd4bf',
   go_to_jail:      '#f87171',
-  chance:          '#c084fc',
+  chance:          '#d080f0',
   community_chest: '#f59e0b',
   tax:             '#94a3b8',
   railroad:        '#94a3b8',
   utility:         '#38bdf8',
-  casino:          '#f472b6',
+  casino:          '#d080f0',
   jackpot:         '#818cf8',
   duel:            '#fb7185',
 };
 
-/* icons for special cells */
-const ICONS: Record<string, string> = {
-  start:           '▶',
-  jail:            '⛓',
-  free_parking:    '🌴',
-  go_to_jail:      '☠',
-  chance:          '?',
-  community_chest: '📦',
-  tax:             '📋',
-  railroad:        '✈',
-  utility:         '⚡',
-  casino:          '?',
-  jackpot:         '💎',
-  duel:            '⚔',
-};
-
-const UTILITY_ICON: Record<string, string> = {
-  'Electric Co.': '⚡',
-  'Water Co.':    '💧',
-};
-
-const INDUSTRY_ICON: Record<string, string> = {
-  it: '💻', oil: '⛽', crypto: '🪙', realestate: '🏢',
-};
-
+/* Rotation: content rotates so that
+   – colour strip ends up at INNER board edge
+   – price badge ends up at OUTER board edge           */
 function getRotation(id: number): string {
   if ([0, 10, 20, 30].includes(id)) return 'rotate(0deg)';
   if (id >= 1  && id <= 9)  return 'rotate(180deg)';
@@ -100,18 +81,17 @@ interface Props {
 export default function BoardCell({
   cell, players, properties, upgrades, jackpotPool, oilModifier, isHighlighted,
 }: Props) {
-  const rotation  = getRotation(cell.id);
-  const colorHex  = cell.color ? COLOR_HEX[cell.color] : null;
-  const ownerId   = properties[cell.id];
-  const owner     = ownerId ? players.find(p => p.id === ownerId) : undefined;
-  const here      = players.filter(p => p.position === cell.id);
-  const isCorner  = [0, 10, 20, 30].includes(cell.id);
-  const itLevel   = upgrades && cell.industry === 'it' ? (upgrades[cell.id] ?? 0) : 0;
+  const rotation   = getRotation(cell.id);
+  const colorHex   = cell.color ? COLOR_HEX[cell.color] : null;
+  const ownerId    = properties[cell.id];
+  const owner      = ownerId ? players.find(p => p.id === ownerId) : undefined;
+  const here       = players.filter(p => p.position === cell.id);
+  const isCorner   = [0, 10, 20, 30].includes(cell.id);
+  const itLevel    = upgrades && cell.industry === 'it' ? (upgrades[cell.id] ?? 0) : 0;
   const isOilCrash = cell.industry === 'oil' && oilModifier === 0;
   const isOilBoom  = cell.industry === 'oil' && oilModifier === 2;
-
-  const bg = colorHex ? GROUP_BG[cell.color!] : (SPECIAL_BG[cell.type] ?? '#111827');
-  const accent = ACCENT[cell.type];
+  const bg         = colorHex ? GROUP_BG[cell.color!] : (SPECIAL_BG[cell.type] ?? '#0e0c1e');
+  const accent     = ACCENT[cell.type];
 
   return (
     <div
@@ -120,113 +100,44 @@ export default function BoardCell({
         backgroundColor: bg,
         borderRight:  '1px solid #000',
         borderBottom: '1px solid #000',
-        outline: isHighlighted ? '2px solid rgba(250,204,21,0.9)' : 'none',
+        outline: isHighlighted ? '2px solid rgba(250,204,21,0.85)' : 'none',
         outlineOffset: '-2px',
-        opacity: isOilCrash ? 0.55 : 1,
+        opacity: isOilCrash ? 0.5 : 1,
       }}
     >
-      {/* Jail prison-bar overlay */}
+      {/* Prison bar overlay */}
       {cell.type === 'jail' && (
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'repeating-linear-gradient(90deg,rgba(255,255,255,0.06) 0px,rgba(255,255,255,0.06) 2px,transparent 2px,transparent 12px)',
+            background: 'repeating-linear-gradient(90deg,rgba(255,255,255,0.055) 0px,rgba(255,255,255,0.055) 2px,transparent 2px,transparent 11px)',
             zIndex: 0,
           }}
         />
       )}
 
-      {/* Rotated content */}
+      {/* Rotated content wrapper */}
       <div
         className="absolute inset-0 flex flex-col"
         style={{ transform: rotation, transformOrigin: 'center center', zIndex: 1 }}
       >
         {colorHex ? (
-          /* ── PROPERTY CELL ── */
-          <>
-            {/* Color strip */}
-            <div
-              className="shrink-0 relative flex items-center justify-center gap-0.5"
-              style={{ backgroundColor: colorHex, height: '30%', minHeight: 7 }}
-            >
-              {/* IT upgrade dots */}
-              {cell.industry === 'it' && itLevel > 0 && (
-                <div className="flex gap-0.5">
-                  {Array.from({ length: itLevel }).map((_, i) => (
-                    <div key={i} style={{ width: 3, height: 3, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.95)' }} />
-                  ))}
-                </div>
-              )}
-              {isOilBoom && (
-                <div className="absolute inset-0 ring-2 ring-inset ring-emerald-300 pointer-events-none" />
-              )}
-              {/* Owner dot */}
-              {owner && (
-                <div
-                  className="absolute rounded-full"
-                  style={{ width: 7, height: 7, right: 2, bottom: 2, backgroundColor: owner.color, boxShadow: `0 0 4px ${owner.color}` }}
-                />
-              )}
-            </div>
-
-            {/* Body */}
-            <div
-              className="flex-1 flex flex-col items-center justify-evenly min-h-0"
-              style={{ padding: '2px 1px' }}
-            >
-              {/* Flag as circular badge */}
-              {cell.flag ? (
-                <div style={{
-                  width: 16, height: 16,
-                  borderRadius: '50%',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  backgroundColor: 'rgba(255,255,255,0.08)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11, lineHeight: 1, flexShrink: 0,
-                }}>
-                  {cell.flag}
-                </div>
-              ) : cell.industry ? (
-                <span style={{ fontSize: 9, lineHeight: 1, opacity: 0.4 }}>{INDUSTRY_ICON[cell.industry]}</span>
-              ) : null}
-
-              {/* Name */}
-              <span style={{
-                fontSize: 7, fontWeight: 700, lineHeight: 1.15,
-                color: 'rgba(255,255,255,0.95)', textAlign: 'center',
-                wordBreak: 'break-word', maxWidth: '100%', padding: '0 1px',
-              }}>
-                {cell.name}
-              </span>
-
-              {/* Oil indicator */}
-              {isOilCrash && <span style={{ fontSize: 5, color: '#f87171', fontWeight: 800 }}>CRASH</span>}
-              {isOilBoom  && <span style={{ fontSize: 5, color: '#4ade80', fontWeight: 800 }}>BOOM</span>}
-
-              {/* Price badge */}
-              {cell.price !== undefined && (
-                <div style={{
-                  fontSize: 6.5, fontWeight: 800, lineHeight: 1,
-                  padding: '1px 4px', borderRadius: 3,
-                  backgroundColor: 'rgba(255,255,255,0.08)',
-                  color: 'rgba(255,255,255,0.55)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                }}>
-                  {cell.price} $
-                </div>
-              )}
-            </div>
-          </>
+          <PropertyContent
+            cell={cell}
+            colorHex={colorHex}
+            itLevel={itLevel}
+            isOilBoom={isOilBoom}
+            isOilCrash={isOilCrash}
+            owner={owner}
+          />
         ) : isCorner ? (
-          /* ── CORNER CELL ── */
-          <CornerCell cell={cell} accent={accent} />
+          <CornerContent cell={cell} accent={accent} />
         ) : (
-          /* ── SPECIAL NON-CORNER CELL ── */
-          <SpecialCell cell={cell} accent={accent} jackpotPool={jackpotPool} />
+          <SpecialContent cell={cell} accent={accent} jackpotPool={jackpotPool} />
         )}
       </div>
 
-      {/* Player tokens — always upright */}
+      {/* Player tokens – always upright, always on top */}
       {here.length > 0 && (
         <div
           className="absolute inset-0 flex flex-wrap items-center justify-center gap-0.5 pointer-events-none"
@@ -238,10 +149,10 @@ export default function BoardCell({
               className="player-token flex items-center justify-center rounded-full shrink-0 font-black"
               title={p.name}
               style={{
-                width: 18, height: 18,
-                backgroundColor: '#080616',
+                width: 20, height: 20,
+                backgroundColor: '#06041a',
                 border: `2.5px solid ${p.color}`,
-                boxShadow: `0 0 8px ${p.color}80, 0 2px 4px rgba(0,0,0,0.9)`,
+                boxShadow: `0 0 10px ${p.color}80, 0 2px 6px rgba(0,0,0,0.9)`,
                 fontSize: 7,
                 color: p.color,
               }}
@@ -255,28 +166,123 @@ export default function BoardCell({
   );
 }
 
-function CornerCell({ cell, accent }: { cell: BoardCellType; accent?: string }) {
-  /* Corner-specific styling to match richup.io */
-  const cornerConfig: Record<string, { icon: string; label?: string; sublabel?: string; iconSize: number }> = {
-    start:       { icon: '▶', label: 'START', iconSize: 22 },
-    jail:        { icon: '⛓', label: 'Passing by', sublabel: 'In Prison', iconSize: 18 },
-    free_parking:{ icon: '🌴', label: 'Vacation', iconSize: 24 },
-    go_to_jail:  { icon: '☠', label: 'Go to prison', iconSize: 22 },
+/* ─────────────────────────────────────────────────────────
+   PROPERTY CELL
+   Layout (code order = visual order after rotation):
+     [color strip]  ← ends up at INNER board edge
+     [flag circle]
+     [city name]
+     [price badge]  ← ends up at OUTER board edge
+   ───────────────────────────────────────────────────────── */
+function PropertyContent({
+  cell, colorHex, itLevel, isOilBoom, isOilCrash, owner,
+}: {
+  cell: BoardCellType;
+  colorHex: string;
+  itLevel: number;
+  isOilBoom: boolean;
+  isOilCrash: boolean;
+  owner?: Player;
+}) {
+  return (
+    <>
+      {/* ── Color strip at code-top (→ inner board edge after rotation) ── */}
+      <div
+        className="shrink-0 relative flex items-center justify-center"
+        style={{ backgroundColor: colorHex, height: '28%', minHeight: 8 }}
+      >
+        {/* IT upgrade dots */}
+        {itLevel > 0 && (
+          <div className="flex gap-0.5">
+            {Array.from({ length: itLevel }).map((_, i) => (
+              <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.95)' }} />
+            ))}
+          </div>
+        )}
+        {isOilBoom && <div className="absolute inset-0 ring-2 ring-inset ring-emerald-300 pointer-events-none" />}
+        {/* Owner dot */}
+        {owner && (
+          <div style={{
+            position: 'absolute', right: 3, bottom: 3,
+            width: 8, height: 8, borderRadius: '50%',
+            backgroundColor: owner.color,
+            boxShadow: `0 0 5px ${owner.color}`,
+          }} />
+        )}
+      </div>
+
+      {/* ── Body ── */}
+      <div className="flex-1 flex flex-col items-center justify-evenly min-h-0" style={{ padding: '2px 2px' }}>
+        {/* Flag circle */}
+        {cell.flag ? (
+          <div style={{
+            width: 18, height: 18, borderRadius: '50%',
+            border: '1.5px solid rgba(255,255,255,0.25)',
+            backgroundColor: 'rgba(255,255,255,0.06)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 12, lineHeight: 1, flexShrink: 0,
+          }}>
+            {cell.flag}
+          </div>
+        ) : (
+          <span style={{ fontSize: 10, opacity: 0.3 }}>
+            {{ it: '💻', oil: '⛽', crypto: '🪙', realestate: '🏢' }[cell.industry ?? ''] ?? ''}
+          </span>
+        )}
+
+        {/* City name */}
+        <span style={{
+          fontSize: 7.5, fontWeight: 700, lineHeight: 1.2,
+          color: 'rgba(255,255,255,0.95)', textAlign: 'center',
+          wordBreak: 'break-word', maxWidth: '100%', padding: '0 1px',
+        }}>
+          {cell.name}
+        </span>
+
+        {isOilCrash && <span style={{ fontSize: 5.5, color: '#f87171', fontWeight: 800 }}>CRASH</span>}
+        {isOilBoom  && <span style={{ fontSize: 5.5, color: '#4ade80', fontWeight: 800 }}>BOOM</span>}
+
+        {/* Price badge at code-bottom (→ outer board edge after rotation) */}
+        {cell.price !== undefined && (
+          <div style={{
+            fontSize: 7.5, fontWeight: 800, lineHeight: 1,
+            padding: '1.5px 5px', borderRadius: 4,
+            backgroundColor: 'rgba(255,255,255,0.1)',
+            color: 'rgba(255,255,255,0.65)',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}>
+            {cell.price} $
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   CORNER CELL  (START / JAIL / VACATION / GO TO JAIL)
+   ───────────────────────────────────────────────────────── */
+function CornerContent({ cell, accent }: { cell: BoardCellType; accent?: string }) {
+  type CornerCfg = { icon: string; label: string; sublabel?: string; iconSize: number };
+  const cfgMap: Record<string, CornerCfg> = {
+    start:        { icon: '▶',  label: 'START',         iconSize: 26 },
+    jail:         { icon: '⛓',  label: 'Passing by',    sublabel: 'In Prison', iconSize: 20 },
+    free_parking: { icon: '🌴', label: 'Vacation',      iconSize: 28 },
+    go_to_jail:   { icon: '☠',  label: 'Go to prison',  iconSize: 26 },
   };
-  const cfg = cornerConfig[cell.type] ?? { icon: '?', label: cell.name, iconSize: 18 };
+  const cfg = cfgMap[cell.type] ?? { icon: '?', label: cell.name, iconSize: 20 };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center min-h-0 gap-1" style={{ padding: '4px 3px' }}>
+    <div className="flex-1 flex flex-col items-center justify-center min-h-0" style={{ gap: 5, padding: '5px 4px' }}>
       {cell.type === 'jail' && (
-        <span style={{ fontSize: 7.5, fontWeight: 700, color: 'rgba(255,255,255,0.45)', lineHeight: 1, textAlign: 'center' }}>
+        <span style={{ fontSize: 8, fontWeight: 600, color: 'rgba(255,255,255,0.4)', lineHeight: 1, textAlign: 'center', letterSpacing: '0.05em' }}>
           {cfg.label}
         </span>
       )}
       <span style={{ fontSize: cfg.iconSize, lineHeight: 1 }}>{cfg.icon}</span>
       <span style={{
-        fontSize: 7.5, fontWeight: 800, lineHeight: 1.2,
-        color: accent ?? 'rgba(255,255,255,0.9)',
-        textAlign: 'center', wordBreak: 'break-word',
+        fontSize: 8.5, fontWeight: 800, lineHeight: 1.2, textAlign: 'center',
+        color: accent ?? 'rgba(255,255,255,0.9)', wordBreak: 'break-word',
       }}>
         {cell.type === 'jail' ? cfg.sublabel : cfg.label}
       </span>
@@ -284,89 +290,85 @@ function CornerCell({ cell, accent }: { cell: BoardCellType; accent?: string }) 
   );
 }
 
-function SpecialCell({ cell, accent, jackpotPool }: { cell: BoardCellType; accent?: string; jackpotPool?: number }) {
-  const isChance    = cell.type === 'chance' || cell.type === 'casino';
-  const isTreasure  = cell.type === 'community_chest';
-  const isAirport   = cell.type === 'railroad';
-  const isUtility   = cell.type === 'utility';
-  const isTax       = cell.type === 'tax';
-  const isDuel      = cell.type === 'duel';
-  const isJackpot   = cell.type === 'jackpot';
+/* ─────────────────────────────────────────────────────────
+   SPECIAL NON-CORNER CELL
+   (Treasure, Surprise, Tax, Airport, Utility, Jackpot, Duel)
+   ───────────────────────────────────────────────────────── */
+function SpecialContent({ cell, accent, jackpotPool }: {
+  cell: BoardCellType;
+  accent?: string;
+  jackpotPool?: number;
+}) {
+  const isTreasure = cell.type === 'community_chest';
+  const isSurprise = cell.type === 'chance' || cell.type === 'casino';
+  const isAirport  = cell.type === 'railroad';
+  const isUtility  = cell.type === 'utility';
+  const isTax      = cell.type === 'tax';
+  const isDuel     = cell.type === 'duel';
+  const isJackpot  = cell.type === 'jackpot';
 
-  const utilityIcon = cell.name.includes('Electric') ? '⚡' : cell.name.includes('Water') ? '💧' : '⚡';
+  const utilIcon = cell.name.includes('Water') ? '💧' : '⚡';
+
+  const iconEl = isTreasure ? (
+    <span style={{ fontSize: 18, lineHeight: 1 }}>📦</span>
+  ) : isSurprise ? (
+    /* Pink circle with "?" – richup.io style */
+    <div style={{
+      width: 22, height: 22, borderRadius: '50%',
+      backgroundColor: `${accent ?? '#d080f0'}22`,
+      border: `2px solid ${accent ?? '#d080f0'}80`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: 13, fontWeight: 900, color: accent ?? '#d080f0', lineHeight: 1,
+    }}>?</div>
+  ) : isAirport ? (
+    <span style={{ fontSize: 16, lineHeight: 1 }}>✈️</span>
+  ) : isUtility ? (
+    <span style={{ fontSize: 18, lineHeight: 1 }}>{utilIcon}</span>
+  ) : isTax ? (
+    <span style={{ fontSize: 15, lineHeight: 1 }}>📋</span>
+  ) : isDuel ? (
+    <span style={{ fontSize: 15, lineHeight: 1 }}>⚔️</span>
+  ) : isJackpot ? (
+    <span style={{ fontSize: 15, lineHeight: 1 }}>💎</span>
+  ) : null;
+
+  const nameColor = isTreasure ? '#f59e0b'
+    : isSurprise              ? (accent ?? '#d080f0')
+    : isDuel                  ? '#fb7185'
+    : 'rgba(255,255,255,0.8)';
 
   return (
     <>
       {/* Top accent bar */}
-      <div style={{ height: 3, backgroundColor: accent ?? '#4a5568', flexShrink: 0, opacity: 0.9 }} />
+      <div style={{ height: 3, backgroundColor: accent ?? '#4a5568', flexShrink: 0 }} />
 
-      <div className="flex-1 flex flex-col items-center justify-center min-h-0 gap-0.5" style={{ padding: '3px 2px' }}>
+      <div className="flex-1 flex flex-col items-center justify-center min-h-0" style={{ gap: 3, padding: '3px 2px' }}>
+        {iconEl}
 
-        {/* Big icon */}
-        {isChance && (
-          <div style={{
-            width: 20, height: 20, borderRadius: '50%',
-            backgroundColor: `${accent}25`,
-            border: `1.5px solid ${accent}60`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 11, fontWeight: 900, color: accent, lineHeight: 1,
-          }}>?</div>
-        )}
-        {isTreasure && (
-          <span style={{ fontSize: 16, lineHeight: 1 }}>📦</span>
-        )}
-        {isAirport && (
-          <span style={{ fontSize: 14, lineHeight: 1 }}>✈️</span>
-        )}
-        {isUtility && (
-          <span style={{ fontSize: 16, lineHeight: 1 }}>{utilityIcon}</span>
-        )}
-        {isTax && (
-          <span style={{ fontSize: 14, lineHeight: 1 }}>📋</span>
-        )}
-        {isDuel && (
-          <span style={{ fontSize: 14, lineHeight: 1 }}>⚔️</span>
-        )}
-        {isJackpot && (
-          <span style={{ fontSize: 14, lineHeight: 1 }}>💎</span>
-        )}
-
-        {/* Name */}
         <span style={{
-          fontSize: 7, fontWeight: 700, lineHeight: 1.2,
-          color: isTreasure ? '#f59e0b'
-               : isChance   ? (accent ?? '#c084fc')
-               : isDuel     ? '#fb7185'
-               : 'rgba(255,255,255,0.85)',
-          textAlign: 'center', wordBreak: 'break-word', maxWidth: '100%',
+          fontSize: 7.5, fontWeight: 700, lineHeight: 1.2, textAlign: 'center',
+          color: nameColor, wordBreak: 'break-word', maxWidth: '100%',
         }}>
           {cell.name}
         </span>
 
-        {/* Tax amount/percent */}
         {cell.taxPercent !== undefined && (
-          <span style={{ fontSize: 8, fontWeight: 800, color: '#94a3b8', lineHeight: 1 }}>%{cell.taxPercent}</span>
+          <span style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', lineHeight: 1 }}>%{cell.taxPercent}</span>
         )}
         {cell.taxAmount !== undefined && (
-          <span style={{ fontSize: 7.5, fontWeight: 800, color: '#94a3b8', lineHeight: 1 }}>${cell.taxAmount}</span>
+          <span style={{ fontSize: 8, fontWeight: 800, color: '#94a3b8', lineHeight: 1 }}>${cell.taxAmount}</span>
         )}
-
-        {/* Price for airports/utilities */}
         {cell.price !== undefined && (
           <div style={{
-            fontSize: 6.5, fontWeight: 700, lineHeight: 1,
-            padding: '1px 4px', borderRadius: 3,
-            backgroundColor: 'rgba(255,255,255,0.07)',
-            color: 'rgba(255,255,255,0.45)',
+            fontSize: 7, fontWeight: 700, padding: '1px 4px', borderRadius: 3,
+            backgroundColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)',
             border: '1px solid rgba(255,255,255,0.08)',
           }}>
             {cell.price} $
           </div>
         )}
-
-        {/* Jackpot pool */}
         {isJackpot && jackpotPool !== undefined && jackpotPool > 0 && (
-          <span style={{ fontSize: 7, color: '#818cf8', fontWeight: 800, lineHeight: 1 }}>${jackpotPool}</span>
+          <span style={{ fontSize: 7.5, color: '#818cf8', fontWeight: 800 }}>${jackpotPool}</span>
         )}
       </div>
     </>

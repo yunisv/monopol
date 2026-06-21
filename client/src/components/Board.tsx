@@ -70,7 +70,8 @@ export default function Board({ gameState, rolling }: Props) {
         gridTemplateRows: 'repeat(11, 1fr)',
         backgroundColor: '#000',
         gap: '1px',
-        border: '2px solid rgba(255,255,255,0.06)',
+        border: '2px solid rgba(255,255,255,0.08)',
+        boxShadow: '0 0 40px rgba(0,0,0,0.8)',
       }}
     >
       {slots.map(({ row, col, cell }) => {
@@ -81,10 +82,10 @@ export default function Board({ gameState, rolling }: Props) {
             return (
               <div
                 key={`${row}-${col}`}
-                style={{ gridRow: '2 / 11', gridColumn: '2 / 11', backgroundColor: '#09071a' }}
+                style={{ gridRow: '2 / 11', gridColumn: '2 / 11', backgroundColor: '#0a0818' }}
                 className="flex flex-col items-center justify-center gap-2 p-3"
               >
-                <div className="text-2xl font-black text-white/10 tracking-widest select-none">
+                <div className="text-2xl font-black tracking-widest select-none" style={{ color: 'rgba(255,255,255,0.06)' }}>
                   MONOPOL
                 </div>
 

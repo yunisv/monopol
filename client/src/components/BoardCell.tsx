@@ -226,7 +226,7 @@ function PropertyContent({
           </div>
         ) : (
           <span style={{ fontSize: 10, opacity: 0.3 }}>
-            {{ it: '💻', oil: '⛽', crypto: '🪙', realestate: '🏢' }[cell.industry ?? ''] ?? ''}
+            {cell.industry ? ({ it: '💻', oil: '⛽', crypto: '🪙', realestate: '🏢' } as Record<string, string>)[cell.industry] ?? '' : ''}
           </span>
         )}
 

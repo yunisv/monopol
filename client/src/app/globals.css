@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --board-bg: #1a1231;
+}
+
+body {
+  background-color: #120d22;
+  color: #e2e8f0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Smooth token movement */
+.player-token {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Dice animation */
+@keyframes diceRoll {
+  0%   { transform: rotate(0deg) scale(1); }
+  25%  { transform: rotate(90deg) scale(1.1); }
+  50%  { transform: rotate(180deg) scale(1); }
+  75%  { transform: rotate(270deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.dice-rolling {
+  animation: diceRoll 0.5s ease-in-out;
+}
+
+/* Toast slide-in */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(100%) scale(0.9); }
+  to   { opacity: 1; transform: translateX(0)   scale(1);   }
+}
+@keyframes toastOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.8); }
+}
+.toast-enter { animation: toastIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+/* Win confetti pulse */
+@keyframes winPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.8; transform: scale(1.05); }
+}
+.win-pulse { animation: winPulse 1.4s ease-in-out infinite; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #1a1231; }
+::-webkit-scrollbar-thumb { background: #4a3f7a; border-radius: 2px; }

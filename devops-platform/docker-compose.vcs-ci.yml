@@ -1,0 +1,71 @@
+# Version control + CI/CD: Gitea (git hosting, PRs, container registry, issue
+# webhooks) with its built-in Actions runner (GitHub-Actions-compatible YAML).
+# Chosen over full GitLab CE to keep resource usage low for a 10-50 dev team;
+# swap for GitLab CE later if you outgrow it (Gitea repos export cleanly).
+
+networks:
+  edge:
+    external: true
+    name: devops_edge
+
+volumes:
+  gitea-data:
+  gitea-db-data:
+
+services:
+  gitea-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: gitea
+      POSTGRES_USER: gitea
+      POSTGRES_PASSWORD: ${GITEA_DB_PASSWORD}
+    volumes:
+      - gitea-db-data:/var/lib/postgresql/data
+    networks:
+      - edge
+
+  gitea:
+    image: gitea/gitea:1.22
+    restart: unless-stopped
+    environment:
+      GITEA__database__DB_TYPE: postgres
+      GITEA__database__HOST: gitea-db:5432
+      GITEA__database__NAME: gitea
+      GITEA__database__USER: gitea
+      GITEA__database__PASSWD: ${GITEA_DB_PASSWORD}
+      GITEA__server__DOMAIN: git.${BASE_DOMAIN}
+      GITEA__server__ROOT_URL: https://git.${BASE_DOMAIN}/
+      GITEA__actions__ENABLED: "true"
+      GITEA__webhook__ALLOWED_HOST_LIST: "*"
+    depends_on:
+      - gitea-db
+    volumes:
+      - gitea-data:/data
+    ports:
+      - "2222:22" # git over SSH
+    networks:
+      - edge
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.gitea.rule=Host(`git.${BASE_DOMAIN}`)
+      - traefik.http.routers.gitea.entrypoints=websecure
+      - traefik.http.routers.gitea.tls.certresolver=le
+      - traefik.http.services.gitea.loadbalancer.server.port=3000
+
+  # Register after first boot with:
+  #   docker compose -f docker-compose.vcs-ci.yml run --rm gitea-runner-register
+  # (see docs/architecture.md for the token retrieval steps)
+  gitea-actions-runner:
+    image: gitea/act_runner:latest
+    restart: unless-stopped
+    environment:
+      GITEA_INSTANCE_URL: https://git.${BASE_DOMAIN}
+      GITEA_RUNNER_REGISTRATION_TOKEN: ${GITEA_RUNNER_TOKEN:-}
+      GITEA_RUNNER_NAME: docker-runner-1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - gitea
+    networks:
+      - edge

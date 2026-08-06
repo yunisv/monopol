@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:richup.io)"
+      "WebFetch(domain:richup.io)",
+      "mcp__Claude_Code_Remote__add_repo"
     ]
   }
 }
